@@ -2,9 +2,7 @@ from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
 
-
 load_dotenv()
-
 
 class SMPP(BaseModel):
     host: str = os.environ.get("SMPP_HOST")
@@ -18,4 +16,4 @@ class SMTP(BaseModel):
     host: str = os.environ.get("SMTP_HOST")
     port: int = os.environ.get("SMTP_PORT")
     sender_email: str | None = os.environ.get("SMTP_SENDER_EMAIL")
-    password: str | None = os.environ.get("SMTP_PASSWORD")
+    sender_password: str | None = os.environ.get("SMTP_PASSWORD")
