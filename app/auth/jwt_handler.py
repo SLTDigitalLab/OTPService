@@ -8,7 +8,7 @@ from datetime import datetime, timezone, timedelta
 class JWTHandler:
     def __init__(self, aud: str = "rae:pub") -> None:
         pem_bytes = open("./auth/keys/key.pem", "rb").read()
-        passphrase = b"rae-engine-password"
+        passphrase = b"otp-passwd"
 
         self.private_key = serialization.load_pem_private_key(
             pem_bytes, password=passphrase, backend=default_backend()
@@ -16,7 +16,7 @@ class JWTHandler:
         self.public_key = open("./auth/keys/key.pem.pub", "rb").read()
         self.aud = aud
         self.algorithm = "RS256"
-        self.issuer = "ra-eng"
+        self.issuer = "otp-sys"
 
     def encode(
         self,
@@ -33,7 +33,7 @@ class JWTHandler:
         payload["aud"] = self.aud
         payload["iat"] = datetime.now(tz=timezone.utc)
         encoded = jwt.encode(
-            payload, self.private_key, self.algorithm, headers={"kid": "rae-engine"}
+            payload, self.private_key, self.algorithm, headers={"kid": "otp-service"}
         )
         return encoded
 

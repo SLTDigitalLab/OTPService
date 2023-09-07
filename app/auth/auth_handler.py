@@ -1,15 +1,13 @@
 import uuid
 from db.psql_connector import DB, default_config
 from datetime import datetime
-import bcrypt
 from .jwt_handler import JWTHandler
-from types_rae.auth import (
+from type_def.auth import (
     AuthSuccess,
     AuthError,
     RegisterUserModel,
     LoginUserModel,
     User,
-    UserModel,
 )
 from typing import Optional, Union
 from fastapi import Depends
@@ -17,7 +15,7 @@ from fastapi.security import OAuth2PasswordBearer, APIKeyHeader
 from auth.api_key_handler import APIKeyManager
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError, InvalidHash
-
+from type_def.keys import DecodedKey
 
 class AuthHandler:
     def __init__(self, user: Union[User, None] = None):
@@ -63,7 +61,7 @@ class AuthHandler:
 
             if result:
                 if PasswordHasher().verify(result["password"], cred.password):
-                    jwt_handler = JWTHandler(aud=f"rae:web")
+                    jwt_handler = JWTHandler(aud=f"otp:web")
                     token = jwt_handler.encode(
                         {
                             "id": result["id"],
@@ -158,9 +156,12 @@ class AuthHandler:
 async def get_current_user_jwt(
     token: str = Depends(OAuth2PasswordBearer(tokenUrl="token")),
 ) -> Optional[dict]:
-    jwt_handler = JWTHandler(aud=f"rae:web")
-    user_dict = jwt_handler.decode(token)
-    return user_dict
+    try:
+        jwt_handler = JWTHandler(aud=f"otp:web")
+        user_dict = jwt_handler.decode(token)
+        return user_dict
+    except Exception as e:
+        return None
 
 
 def get_current_active_user_jwt(
@@ -201,3 +202,7 @@ def get_current_active_user_api_key(
     if not current_user.disabled:
         return current_user
     return None
+
+
+def decode_key(token: str = Depends(APIKeyHeader(name="X-Api-Key"))) -> DecodedKey | None:
+    result = APIKeyManager().safe_get(token)

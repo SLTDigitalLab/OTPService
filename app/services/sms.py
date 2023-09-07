@@ -1,12 +1,26 @@
 import logging
+import os
 import sys
+
+from pydantic import BaseModel
 from type_def.configs import SMPP
 
 import smpplib.gsm
 import smpplib.client
 import smpplib.consts
+from threading import Thread
+# from dotenv import load_dotenv
+
+# load_dotenv()
 
 logging.basicConfig(level="DEBUG")
+
+# class SMPP(BaseModel):
+#     host: str = os.environ.get("SMPP_HOST")
+#     port: str = os.environ.get("SMPP_PORT")
+#     sys_id: str | None = os.environ.get("SMPP_SYS_ID")
+#     password: str | None = os.environ.get("SMPP_PASSWORD")
+
 
 
 def send_sms(source_name: str, destination_addr: str, msg: str, smpp_config: SMPP):
@@ -15,7 +29,7 @@ def send_sms(source_name: str, destination_addr: str, msg: str, smpp_config: SMP
     # Two parts, GSM default / UCS2, SMS with UDH
     parts, encoding_flag, msg_type_flag = smpplib.gsm.make_parts(msg)
 
-    client = smpplib.client.Client(smpp_config.host, smpp_config.password)
+    client = smpplib.client.Client(smpp_config.host, smpp_config.port)
 
     # Print when obtain message_id
     client.set_message_sent_handler(
@@ -53,5 +67,10 @@ def send_sms(source_name: str, destination_addr: str, msg: str, smpp_config: SMP
         print(pdu.sequence)
 
     # Enters a loop, waiting for incoming PDUs
-    client.listen()
+    # client.listen()
+    t = Thread(target=client.listen)
+    t.start()
     client.disconnect()
+
+
+# send_sms("Test", "0714170928", "TEST", SMPP())

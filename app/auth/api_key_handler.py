@@ -1,5 +1,4 @@
 from redis.asyncio import Redis
-from types_rae.auth import User
 from typing import Optional, Union
 import secrets
 from db.redis_connector import redis_connection
@@ -8,7 +7,9 @@ from datetime import datetime, timedelta
 from db.psql_connector import DB, default_config
 from type_def.common import Success, Error
 from type_def.auth import APIKeyReq
-
+from type_def.keys import DecodedKey
+from type_def.auth import User
+from type_def.tenent import Tenent
 
 class Scope:
     def __init__(self) -> None:
@@ -29,7 +30,7 @@ class APIKeyManager:
 
     def issue_new(self, body: APIKeyReq) -> Union[Success, Error]:
         try:
-            api_key = f"rae_{secrets.token_urlsafe(16)}"
+            api_key = f"otpapi_{secrets.token_urlsafe(16)}"
             now = datetime.now()
             exp = now + timedelta(days=body.expire_in)
             self.redis.set(
@@ -76,7 +77,7 @@ class APIKeyManager:
 
     def safe_get(
         self, api_key: str, scope: Optional[str] = None, origin: Optional[str] = None
-    ) -> dict:
+    ) -> DecodedKey:
         data = self.redis.get(api_key)
         if data:
             data = json.loads(data)
@@ -89,15 +90,19 @@ class APIKeyManager:
             if data["expire_ts"] < datetime.timestamp(datetime.now()):
                 raise Exception("API Key expired")
             user_id = data.get("user", None)
-            if user_id:
+            tenent_id = data.get("tenent", None)
+
+            if user_id and tenent_id:
                 self.db.exec("SELECT * FROM users WHERE id = %s LIMIT 1", (user_id,))
-                result = self.db.fetchone()
-                if result:
-                    return result
+                user_result = self.db.fetchone()
+                self.db.exec("SELECT * FROM tenents WHERE id = %s AND owner = %s LIMIT 1", (tenent_id, user_id))
+                tenent_result = self.db.fetchone()
+                if user_result and tenent_result:
+                    return DecodedKey(tenent_id=Tenent(**tenent_id), user=User(**user_result))
                 else:
-                    raise Exception("User associated with API key not found")
+                    raise Exception("User associated with API key not found" if not user_result else "Tenent associated with API key not found")
             else:
-                raise Exception("User associated with API key not found")
+                raise Exception("User associated with API key not found" if not user_id else "Tenent associated with API key not found")
         raise Exception("API Key not found")
 
     def safe_check(
