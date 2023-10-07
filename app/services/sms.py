@@ -1,17 +1,10 @@
 import logging
-import os
 import sys
-
-from pydantic import BaseModel
 from type_def.configs import SMPP
-
 import smpplib.gsm
 import smpplib.client
 import smpplib.consts
 from threading import Thread
-# from dotenv import load_dotenv
-
-# load_dotenv()
 
 logging.basicConfig(level="DEBUG")
 
@@ -64,11 +57,11 @@ def send_sms(source_name: str, destination_addr: str, msg: str, smpp_config: SMP
             esm_class=msg_type_flag,
             registered_delivery=True,
         )
-        print(pdu.sequence)
+        # print(pdu.sequence)
 
     # Enters a loop, waiting for incoming PDUs
     # client.listen()
-    t = Thread(target=client.listen)
+    t = Thread(target=client.listen,  kwargs={'auto_send_enquire_link': True})
     t.start()
     client.disconnect()
 
