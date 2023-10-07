@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from services.sms import send_sms
 from db.psql_connector import DB, default_config
 from libs.otp import gen_otp
+from uuid import uuid4
 
 from type_def.auth import User
 from type_def.tenent import Tenent
@@ -18,24 +19,24 @@ def send_sms_otp(
     otp = gen_otp(tenent.sms_otp_size)
     created_at = datetime.now()
     expired_at = datetime.now() + timedelta(seconds=tenent.sms_otp_expired_in_s)
-    # print(
-    #     tenent.id,
-    #     user.id,
-    #     send_to,
-    #     otp,
-    #     created_at,
-    #     expired_at,
-    #     False,
-    #     None,
-    #     0,
-    # )
+    secret = str(uuid4())
     db.exec(
-        "INSERT INTO sms_otp (tenent, user_id, sent_to, otp, created_at, expired_at, validated, validated_at, tries) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        "DELETE FROM sms_otp WHERE tenent_id = %s AND sent_to = %s",
+        (
+            tenent.id,
+            otp,
+        ),
+    )
+    
+    db.commit()
+    db.exec(
+        "INSERT INTO sms_otp (tenent_id, user_id, sent_to, otp, client_secret, created_at, expired_at, validated, validated_at, tries) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (
             tenent.id,
             user.id,
             send_to,
             otp,
+            secret,
             created_at,
             expired_at,
             False,
@@ -43,7 +44,7 @@ def send_sms_otp(
             0,
         ),
     )
-
+    db.commit()
     try:
         send_sms(
             str("SLT"),
@@ -56,7 +57,7 @@ def send_sms_otp(
         return Success(
             "Verification SMS sent",
             200,
-            {"send_to": send_to, "created_at": created_at, "expired_at": expired_at},
+            {"send_to": send_to, "client_secret": secret, "created_at": created_at, "expired_at": expired_at},
         )
     except Exception as e:
         return Error("Failed to send verification SMS. Reason: " + str(e), 1000, 400)
