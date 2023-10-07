@@ -1,4 +1,3 @@
-from typing import Optional
 import jwt
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
@@ -6,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 
 
 class JWTHandler:
-    def __init__(self, aud: str = "rae:pub") -> None:
+    def __init__(self, aud: str = "otp:web") -> None:
         pem_bytes = open("./auth/keys/key.pem", "rb").read()
         passphrase = b"otp-passwd"
 
@@ -37,15 +36,19 @@ class JWTHandler:
         )
         return encoded
 
-    def decode(self, token: str) -> Optional[dict]:
+    def decode(self, token: str) -> dict | None:
         if token:
-            decoded = jwt.decode(
-                token,
-                self.public_key,
-                self.algorithm,
-                audience=self.aud,
-                issuer=self.issuer,
-                options={"require": ["exp", "iss", "id"]},
-            )
-            return decoded
+            try:
+                decoded = jwt.decode(
+                    token,
+                    self.public_key,
+                    self.algorithm,
+                    audience=self.aud,
+                    issuer=self.issuer,
+                    options={"require": ["exp", "iss", "id"]},
+                )
+                return decoded
+            except Exception as e:
+                print(e)
+                return None
         return None

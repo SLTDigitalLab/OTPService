@@ -27,15 +27,12 @@ class JWTBearer(HTTPBearer):
             return None
 
     def verify_jwt(self, jwtoken: str) -> bool:
-        isTokenValid: bool = False
         try:
             jwt = JWTHandler("rae:web")
             payload = jwt.decode(jwtoken)
+            return True if payload else False
         except Exception as e:
-            payload = None
-        if payload:
-            isTokenValid = True
-        return isTokenValid
+            return False
 
 
 class APIKey(APIKeyHeader):
@@ -43,7 +40,7 @@ class APIKey(APIKeyHeader):
         super(APIKey, self).__init__(auto_error=auto_error, name="X-Api-Key")
 
     async def __call__(self, request: Request):
-        key: Optional[str] = await super(APIKey, self).__call__(request)
+        key: str | None = await super(APIKey, self).__call__(request)
         if key:
             try:
                 info = APIKeyManager().safe_check(key)

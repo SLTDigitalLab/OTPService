@@ -8,6 +8,7 @@ from type_def.auth import (
     RegisterUserModel,
     LoginUserModel,
     User,
+    UserXp
 )
 from typing import Optional, Union
 from fastapi import Depends
@@ -18,14 +19,13 @@ from argon2.exceptions import VerifyMismatchError, InvalidHash
 from type_def.keys import DecodedKey
 
 class AuthHandler:
-    def __init__(self, user: Union[User, None] = None):
+    def __init__(self, user: User | None = None):
         self.db = DB(default_config())
         self.user = user
 
-    async def register(self, reg: RegisterUserModel) -> Union[AuthSuccess, AuthError]:
+    async def register(self, reg: RegisterUserModel) -> AuthSuccess | AuthError:
         try:
             password = reg.password.encode("utf-8")
-            # enc_password = bcrypt.hashpw(password, bcrypt.gensalt())
             enc_password = PasswordHasher().hash(password)
             # check email already exists
             user_exist = await self.check_email_exist(reg.email)
@@ -49,12 +49,12 @@ class AuthHandler:
             self.db.commit()
             result = self.db.fetchone()
             if result:
-                return AuthSuccess("User registered successfully", User(**result).pub())
+                return AuthSuccess("User registered successfully", UserXp(**User(**result).__dict__).pub())
             return AuthError("User not created")
         except Exception as e:
             return AuthError(str(e))
 
-    async def login(self, cred: LoginUserModel) -> Union[AuthSuccess, AuthError]:
+    async def login(self, cred: LoginUserModel) -> AuthSuccess | AuthError:
         try:
             self.db.exec("SELECT * FROM users WHERE email = %s LIMIT 1", (cred.email,))
             result = self.db.fetchone()
@@ -76,7 +76,7 @@ class AuthHandler:
                         "User logged in successfully",
                         {
                             "jwt": token,
-                            "user": User(**result).pub(),
+                            "user": UserXp(**User(**result).__dict__).pub(),
                             "gen_ts": datetime.now().timestamp(),
                         },
                     )
@@ -155,18 +155,19 @@ class AuthHandler:
 
 async def get_current_user_jwt(
     token: str = Depends(OAuth2PasswordBearer(tokenUrl="token")),
-) -> Optional[dict]:
-    try:
-        jwt_handler = JWTHandler(aud=f"otp:web")
-        user_dict = jwt_handler.decode(token)
-        return user_dict
-    except Exception as e:
-        return None
+) -> dict | None:
+    # try:
+    jwt_handler = JWTHandler(aud=f"otp:web")
+    user_dict = jwt_handler.decode(token)
+    print(user_dict)
+    return user_dict
+    # except Exception as e:
+    #     return raise_exception(e)
 
 
 def get_current_active_user_jwt(
     current_user: Optional[dict] = Depends(get_current_user_jwt),
-) -> Optional[User]:
+) -> User | None:
     if current_user:
         db = DB(default_config())
         db.exec(
@@ -174,15 +175,16 @@ def get_current_active_user_jwt(
             (current_user["id"],),
         )
         result = db.fetchone()
-        user = User(**result)
-        if not user.disabled:
-            return user
+        if result:
+            user = User(**result)
+            if not user.disabled:
+                return user
     return None
 
 
 async def get_current_active_admin_user_jwt(
     current_user: User = Depends(get_current_user_jwt),
-) -> Optional[User]:
+) -> User | None:
     if not current_user.disabled and current_user.is_super_admin:
         return current_user
     return None
@@ -190,19 +192,19 @@ async def get_current_active_admin_user_jwt(
 
 async def get_current_user_api_key(
     token: str = Depends(APIKeyHeader(name="X-Api-Key")),
-) -> Optional[User]:
+) -> User | None:
     result = APIKeyManager().safe_get(token)
     user = User(**result)
     return user
 
 
 def get_current_active_user_api_key(
-    current_user: Optional[dict] = Depends(get_current_user_api_key),
-) -> Optional[User]:
+    current_user: dict | None = Depends(get_current_user_api_key),
+) -> User | None:
     if not current_user.disabled:
         return current_user
     return None
 
 
 def decode_key(token: str = Depends(APIKeyHeader(name="X-Api-Key"))) -> DecodedKey | None:
-    result = APIKeyManager().safe_get(token)
+    return APIKeyManager().safe_get(token)
