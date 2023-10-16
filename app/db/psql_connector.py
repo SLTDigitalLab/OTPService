@@ -61,6 +61,7 @@ class DB:
     cursor = None
 
     def __init__(self, params, cf=psycopg2.extras.RealDictCursor) -> None:
+        print(params)
         self.conn = psycopg2.connect(**params)
         self.cursor = self.conn.cursor(cursor_factory=cf)
 

@@ -1,3 +1,5 @@
+version: '3.3'
+
 services:
   db:
     image: postgres:15-alpine
@@ -5,11 +7,13 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-    ports:
-      - '5432:5432'
+    # ports:
     volumes: 
       - db:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    networks:
+      - otp-net
+
   cache:
     image: redis:7-alpine
     restart: always
@@ -18,6 +22,9 @@ services:
     command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     volumes: 
       - cache:/data
+    networks:
+      - otp-net
+
   migrations:
     build: migrations
     command: -connectRetries=20 migrate
@@ -26,8 +33,12 @@ services:
       FLYWAY_MIXED: 'true'
       FLYWAY_PASSWORD: 'postgres'
       FLYWAY_URL: 'jdbc:postgresql://db:5432/postgres'
+    networks:
+      - otp-net
+
   api:
     build: .
+    restart: always
     ports:
       - "8000:8000"
     depends_on:
@@ -48,9 +59,15 @@ services:
       REDIS_HOST: cache
       REDIS_PORT: 6379
       REDIS_PASSWORD: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    networks:
+      - otp-net
 
 volumes:
   db:
     driver: local
   cache:
     driver: local
+
+networks:
+  otp-net:
+    driver: bridge
