@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from type_def.auth import User
 
+
 class Tenent(BaseModel):
     id: str
     user_id: str
@@ -23,6 +24,7 @@ class Tenent(BaseModel):
     created_ts: datetime | None = None
     updated_ts: datetime | None = None
 
+
 class TenentRq(BaseModel):
     name: str
     email_otp_size: int = 6
@@ -37,6 +39,7 @@ class TenentRq(BaseModel):
     email_otp_template: str = (
         "Your OTP is {otp}. It's expired at {expired_at}. (Created: {created_at}))"
     )
+
 
 class TenentRenameRq(BaseModel):
     name: str

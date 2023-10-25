@@ -21,7 +21,14 @@ from type_def.auth import (
 )
 from type_def.common import Error, Success
 from type_def.tenent import Tenent, TenentRq, TenentRenameRq
-from type_def.requests import SMSOTPSendRq, EmailOTPSendRq, SMSOTPVerifyRq, EmailOTPVerifyRq, SMSMarketingSendRq, EmailMarketingSendRq
+from type_def.requests import (
+    SMSOTPSendRq,
+    EmailOTPSendRq,
+    SMSOTPVerifyRq,
+    EmailOTPVerifyRq,
+    SMSMarketingSendRq,
+    EmailMarketingSendRq,
+)
 from type_def.keys import DecodedKey
 
 
@@ -35,7 +42,6 @@ from api.v1.email.verify_otp import verify_email_otp
 from api.v1.email.email_marketing import send_email_marketing
 
 from api.v1.management.tenent import TenentAPI
-
 
 
 app = FastAPI()
@@ -144,56 +150,128 @@ async def list_api_token(
 ):
     return APIKeyManager(user).get_my_token_list().resp(response)
 
+
 #########################
 #       SMS ROUTES     #
 ########################
 @app.post("/api/v1/sms/send-otp", tags=["sms"], dependencies=[Depends(APIKey())])
-def api_send_sms_otp(response: Response, body: SMSOTPSendRq, decoded_key: DecodedKey=Depends(decode_key)):
-    return send_sms_otp(user=decoded_key.user, tenent=decoded_key.tenent, send_to=body.mobile).resp(response)
+def api_send_sms_otp(
+    response: Response,
+    body: SMSOTPSendRq,
+    decoded_key: DecodedKey = Depends(decode_key),
+):
+    return send_sms_otp(
+        user=decoded_key.user, tenent=decoded_key.tenent, send_to=body.mobile
+    ).resp(response)
+
 
 @app.post("/api/v1/sms/verify-otp", tags=["sms"], dependencies=[Depends(APIKey())])
-def api_verify_sms_otp(response: Response, body: SMSOTPVerifyRq, decoded_key: DecodedKey=Depends(decode_key)):
-    return verify_sms_otp(decoded_key.tenent, body.otp, body.mobile, body.client_secret).resp(response)
+def api_verify_sms_otp(
+    response: Response,
+    body: SMSOTPVerifyRq,
+    decoded_key: DecodedKey = Depends(decode_key),
+):
+    return verify_sms_otp(
+        decoded_key.tenent, body.otp, body.mobile, body.client_secret
+    ).resp(response)
+
 
 @app.post("/api/v1/sms/send-marketing", tags=["sms"], dependencies=[Depends(APIKey())])
-def api_send_sms_otp(response: Response, body: SMSMarketingSendRq, decoded_key: DecodedKey=Depends(decode_key)):
-    return send_sms_marketing(user=decoded_key.user, tenent=decoded_key.tenent, send_to=body.mobile, msg=body.msg).resp(response)
+def api_send_sms_otp(
+    response: Response,
+    body: SMSMarketingSendRq,
+    decoded_key: DecodedKey = Depends(decode_key),
+):
+    return send_sms_marketing(
+        user=decoded_key.user,
+        tenent=decoded_key.tenent,
+        send_to=body.mobile,
+        msg=body.msg,
+    ).resp(response)
 
 
 #########################
 #      Email ROUTES    #
 ########################
 @app.post("/api/v1/email/send-otp", tags=["email"], dependencies=[Depends(APIKey())])
-def api_send_email_otp(response: Response, body: EmailOTPSendRq, decoded_key: DecodedKey=Depends(decode_key)):
-    return send_email_otp(decoded_key.user, decoded_key.tenent, body.email, body.client_secret).resp(response)
+def api_send_email_otp(
+    response: Response,
+    body: EmailOTPSendRq,
+    decoded_key: DecodedKey = Depends(decode_key),
+):
+    return send_email_otp(
+        decoded_key.user, decoded_key.tenent, body.email, body.client_secret
+    ).resp(response)
+
 
 @app.post("/api/v1/email/verify-otp", tags=["email"], dependencies=[Depends(APIKey())])
-def api_verify_sms_otp(response: Response, body: EmailOTPVerifyRq, decoded_key: DecodedKey=Depends(decode_key)):
-    return verify_sms_otp(decoded_key.tenent, body.otp, body.email, body.client_secret).resp(response)
+def api_verify_sms_otp(
+    response: Response,
+    body: EmailOTPVerifyRq,
+    decoded_key: DecodedKey = Depends(decode_key),
+):
+    return verify_sms_otp(
+        decoded_key.tenent, body.otp, body.email, body.client_secret
+    ).resp(response)
 
-@app.post("/api/v1/email/send-marketing", tags=["email"], dependencies=[Depends(APIKey())])
-def api_send_email_marketing(response: Response, body: EmailMarketingSendRq, decoded_key: DecodedKey=Depends(decode_key)):
-    return send_email_marketing(decoded_key.user, decoded_key.tenent, body.email, body.msg).resp(response)
+
+@app.post(
+    "/api/v1/email/send-marketing", tags=["email"], dependencies=[Depends(APIKey())]
+)
+def api_send_email_marketing(
+    response: Response,
+    body: EmailMarketingSendRq,
+    decoded_key: DecodedKey = Depends(decode_key),
+):
+    return send_email_marketing(
+        decoded_key.user, decoded_key.tenent, body.email, body.msg
+    ).resp(response)
 
 
 #########################
 #      TENENT ROUTES   #
 ########################
-@app.post("/api/v1/management/tenents/new", tags=["tenents"] ,dependencies=[Depends(JWTBearer)])
-def new_tenent(response: Response, body: TenentRq, user: User = Depends(get_current_active_user)):
+@app.post(
+    "/api/v1/management/tenents/new",
+    tags=["tenents"],
+    dependencies=[Depends(JWTBearer)],
+)
+def new_tenent(
+    response: Response, body: TenentRq, user: User = Depends(get_current_active_user)
+):
     print(user)
     return TenentAPI(user).new(body).resp(response)
 
-@app.get("/api/v1/management/tenents/{id}", tags=["tenents"], dependencies=[Depends(JWTBearer)])
-def get_tenent(response: Response, id: str, user: User = Depends(get_current_active_user)):
+
+@app.get(
+    "/api/v1/management/tenents/{id}",
+    tags=["tenents"],
+    dependencies=[Depends(JWTBearer)],
+)
+def get_tenent(
+    response: Response, id: str, user: User = Depends(get_current_active_user)
+):
     return TenentAPI(user).get(id).resp(response)
 
-@app.get("/api/v1/management/tenents", tags=["tenents"], dependencies=[Depends(JWTBearer)])
+
+@app.get(
+    "/api/v1/management/tenents", tags=["tenents"], dependencies=[Depends(JWTBearer)]
+)
 def list_tenent(response: Response, user: User = Depends(get_current_active_user)):
     return TenentAPI(user).list().resp(response)
 
-@app.put("/api/v1/management/tenents/{id}/rename", tags=["tenents"], dependencies=[Depends(JWTBearer)])
-def rename_tenent(response: Response, id: str, body: TenentRenameRq, user: User = Depends(get_current_active_user)):
+
+@app.put(
+    "/api/v1/management/tenents/{id}/rename",
+    tags=["tenents"],
+    dependencies=[Depends(JWTBearer)],
+)
+def rename_tenent(
+    response: Response,
+    id: str,
+    body: TenentRenameRq,
+    user: User = Depends(get_current_active_user),
+):
     return TenentAPI(user).rename(id, body.name).resp(response)
 
 

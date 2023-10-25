@@ -4,14 +4,15 @@ from type_def.auth import User
 from type_def.common import Success, Error
 from management.tenents import Tenents
 
+
 class TenentAPI(Tenents):
     def __init__(self, user: User) -> None:
         super().__init__(user)
 
     def new(self, t: TenentRq) -> Tenent:
-        tenent : Tenent | None = super().new(t)
+        tenent: Tenent | None = super().new(t)
         if tenent:
-            return  Success("Tenent created successfully", 200, tenent.__dict__)
+            return Success("Tenent created successfully", 200, tenent.__dict__)
         return Error("Failed to create tenent", 1000, 400)
 
     def get(self, id):
@@ -19,7 +20,7 @@ class TenentAPI(Tenents):
         if tenent:
             return Success("Tenent found", 200, tenent.__dict__)
         return Error("Tenent not found", 1000, 400)
-    
+
     def list(self):
         tenent_list: list[Tenent] | None = super().list()
         if tenent_list:
@@ -42,7 +43,7 @@ class TenentAPI(Tenents):
     #     super().verify()
     #     self.db.exec("UPDATE tenents SET verified = %s WHERE tenent_id = %s ", (True, self.user.id))
     #     self.db.commit()
-        
+
     # def disable(self):
     #     self.db.exec("UPDATE tenents SET disabled = %s WHERE user_id = %s", (True, self.user.id))
     #     self.db.commit()
@@ -60,4 +61,3 @@ class TenentAPIAdmin:
 
     def delete():
         pass
-

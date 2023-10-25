@@ -27,7 +27,7 @@ def send_sms_otp(
             otp,
         ),
     )
-    
+
     db.commit()
     db.exec(
         "INSERT INTO sms_otp (tenent_id, user_id, sent_to, otp, client_secret, created_at, expired_at, validated, validated_at, tries) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
@@ -57,7 +57,12 @@ def send_sms_otp(
         return Success(
             "Verification SMS sent",
             200,
-            {"send_to": send_to, "client_secret": secret, "created_at": created_at, "expired_at": expired_at},
+            {
+                "send_to": send_to,
+                "client_secret": secret,
+                "created_at": created_at,
+                "expired_at": expired_at,
+            },
         )
     except Exception as e:
         return Error("Failed to send verification SMS. Reason: " + str(e), 1000, 400)

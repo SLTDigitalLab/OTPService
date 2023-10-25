@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 class SMPP(BaseModel):
     host: str = os.environ.get("SMPP_HOST")
     port: str = os.environ.get("SMPP_PORT")

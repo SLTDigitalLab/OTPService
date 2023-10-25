@@ -13,17 +13,21 @@ from management.tenents import Tenents
 
 
 class APIKeyManager:
-    def __init__(self, tenent_id: str | None  = None, current_user: User | None = None) -> None:
+    def __init__(
+        self, tenent_id: str | None = None, current_user: User | None = None
+    ) -> None:
         self.redis: Redis = redis_connection
         self.user: User = current_user
-        self.tenent: Tenent | None = Tenents(self.user).get(tenent_id) if tenent_id else None
+        self.tenent: Tenent | None = (
+            Tenents(self.user).get(tenent_id) if tenent_id else None
+        )
         self.db: DB = DB(default_config())
 
-    def issue_new(self, body: APIKeyReq) -> Success |  Error:
+    def issue_new(self, body: APIKeyReq) -> Success | Error:
         try:
             if not self.tenent:
                 raise Exception("Tenent not found")
-            api_key = f"atr_{secrets.token_urlsafe(16)}" # atr = auth reach api key
+            api_key = f"atr_{secrets.token_urlsafe(16)}"  # atr = auth reach api key
             now = datetime.now()
             exp = now + timedelta(days=body.expire_in)
             self.redis.set(
@@ -90,14 +94,27 @@ class APIKeyManager:
             if user_id and tenent_id:
                 self.db.exec("SELECT * FROM users WHERE id = %s LIMIT 1", (user_id,))
                 user_result = self.db.fetchone()
-                self.db.exec("SELECT * FROM tenents WHERE id = %s AND user_id = %s LIMIT 1", (tenent_id, user_id))
+                self.db.exec(
+                    "SELECT * FROM tenents WHERE id = %s AND user_id = %s LIMIT 1",
+                    (tenent_id, user_id),
+                )
                 tenent_result = self.db.fetchone()
                 if user_result and tenent_result:
-                    return DecodedKey(tenent=Tenent(**tenent_result), user=UserModel(**user_result))
+                    return DecodedKey(
+                        tenent=Tenent(**tenent_result), user=UserModel(**user_result)
+                    )
                 else:
-                    raise Exception("User associated with API key not found" if not user_result else "Tenent associated with API key not found")
+                    raise Exception(
+                        "User associated with API key not found"
+                        if not user_result
+                        else "Tenent associated with API key not found"
+                    )
             else:
-                raise Exception("User associated with API key not found" if not user_id else "Tenent associated with API key not found")
+                raise Exception(
+                    "User associated with API key not found"
+                    if not user_id
+                    else "Tenent associated with API key not found"
+                )
         raise Exception("API Key not found")
 
     def safe_check(
