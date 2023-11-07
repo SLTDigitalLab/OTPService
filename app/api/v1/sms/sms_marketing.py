@@ -12,9 +12,11 @@ def send_sms_marketing(
     send_to: str,
     msg: str,
 ):
-    db = DB(default_config()) 
+    db = DB(default_config())
     body = str(msg)
-    if (not tenent.disabled and not tenent.verified):
+    if len(body) > 160:
+        return Error("Message is too long. Max 160 characters", 1000, 400)
+    if not tenent.disabled and not tenent.verified:
         try:
             send_sms(
                 str("SLT"),
@@ -24,13 +26,7 @@ def send_sms_marketing(
             )
             db.exec(
                 "INSERT INTO marketing_logs (tenent_id, user_id, type, sent_to, body) VALUES (%s, %s, %s, %s, %s)",
-                (
-                    tenent.id,
-                    user.id,
-                    "sms",
-                    send_to,
-                    body
-                ),
+                (tenent.id, user.id, "sms", send_to, body),
             )
             db.commit()
             return Success(
@@ -42,8 +38,10 @@ def send_sms_marketing(
             return Error("Failed to send SMS. Reason: " + str(e), 1000, 400)
     else:
         reason = None
-        if (tenent.disabled):
+        if tenent.disabled:
             reason = "Tenent is disabled. Please contact administrator for activation"
-        elif (not tenent.verified):
-            reason = "Tenent is not verified. Please contact administrator for verification"
+        elif not tenent.verified:
+            reason = (
+                "Tenent is not verified. Please contact administrator for verification"
+            )
         return Error(reason, 1000, 400)

@@ -24,7 +24,7 @@ class Tenents:
                     t.sms_otp_size,
                     t.sms_otp_expired_in_s,
                     t.sms_otp_template,
-                    t.email_otp_template
+                    t.email_otp_template,
                 ),
             )
             self.db.commit()
@@ -34,13 +34,16 @@ class Tenents:
         return None
 
     def get(self, id) -> Tenent | None:
-        self.db.exec("SELECT * FROM tenents WHERE user_id = %s and id = %s LIMIT 1", (self.user.id, id))
+        self.db.exec(
+            "SELECT * FROM tenents WHERE user_id = %s and id = %s LIMIT 1",
+            (self.user.id, id),
+        )
         result = self.db.fetchone()
         if result:
             return Tenent(**result)
         return None
-    
-    def list(self) -> list[Tenent] | None :
+
+    def list(self) -> list[Tenent] | None:
         self.db.exec("SELECT * FROM tenents WHERE user_id = %s", (self.user.id,))
         result = self.db.fetchall()
         if result:
@@ -54,16 +57,23 @@ class Tenents:
         pass
 
     def rename(self, id: str, name: str):
-        self.db.exec("UPDATE tenents SET name = %s, verified = %s WHERE tenent_id = %s and user_id = %s", (name, False, id, self.user.id))
+        self.db.exec(
+            "UPDATE tenents SET name = %s, verified = %s WHERE tenent_id = %s and user_id = %s",
+            (name, False, id, self.user.id),
+        )
         c = self.db.commit()
         print(c)
 
     def verify(self):
-        self.db.exec("UPDATE tenents SET verified = %s WHERE user_id = %s", (True, self.user.id))
+        self.db.exec(
+            "UPDATE tenents SET verified = %s WHERE user_id = %s", (True, self.user.id)
+        )
         self.db.commit()
-        
+
     def disable(self):
-        self.db.exec("UPDATE tenents SET disabled = %s WHERE user_id = %s", (True, self.user.id))
+        self.db.exec(
+            "UPDATE tenents SET disabled = %s WHERE user_id = %s", (True, self.user.id)
+        )
         self.db.commit()
 
 
@@ -72,10 +82,14 @@ class TenentsAdmin:
         pass
 
     def verify(self):
-        if (self.user.is_admin):
-            self.db.exec("UPDATE tenents SET verified = %s WHERE user_id = %s", (True, self.user.id))
+        if self.user.is_admin:
+            self.db.exec(
+                "UPDATE tenents SET verified = %s WHERE user_id = %s",
+                (True, self.user.id),
+            )
             self.db.commit()
             return True
         return False
+
     def disable():
         pass

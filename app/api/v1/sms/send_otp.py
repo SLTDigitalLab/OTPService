@@ -20,15 +20,15 @@ def send_sms_otp(
     created_at = datetime.now()
     expired_at = datetime.now() + timedelta(seconds=tenent.sms_otp_expired_in_s)
     secret = str(uuid4())
-    db.exec(
-        "DELETE FROM sms_otp WHERE tenent_id = %s AND sent_to = %s",
-        (
-            tenent.id,
-            otp,
-        ),
-    )
+    # db.exec(
+    #     "DELETE FROM sms_otp WHERE tenent_id = %s AND sent_to = %s",
+    #     (
+    #         tenent.id,
+    #         otp,
+    #     ),
+    # )
 
-    db.commit()
+    # db.commit()
     db.exec(
         "INSERT INTO sms_otp (tenent_id, user_id, sent_to, otp, client_secret, created_at, expired_at, validated, validated_at, tries) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (

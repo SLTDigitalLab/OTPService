@@ -1,3 +1,4 @@
+from libs.otp import otp_to_logs
 from type_def.tenent import Tenent
 from db.psql_connector import DB, default_config
 from type_def.common import Success, Error
@@ -31,22 +32,31 @@ def verify_sms_otp(
                 )
                 <= 0
             ):
+                otp_to_logs(db, result, "sms")
+                db.exec(
+                    "DELETE FROM sms_otp WHERE id = %s",
+                    (result.get("id"),),
+                )
+                db.commit()
                 return Error("OTP is expired.", 1000, 400)
             elif (
                 result.get("tries") and result.get("tries") >= tenent.sms_otp_max_tries
             ):
-                return Error("OTP is expired.", 1000, 400)
-            else:
-                x = db.exec(
-                    "UPDATE sms_otp SET validated = %s, validated_at = %s WHERE id = %s",
-                    (
-                        True,
-                        datetime.now(),
-                        result.get("id"),
-                    ),
+                otp_to_logs(db, result, "sms")
+                db.exec(
+                    "DELETE FROM sms_otp WHERE id = %s",
+                    (result.get("id"),),
                 )
                 db.commit()
-                return Success("OTP verified.", 200, result)
+                return Error("OTP is expired.", 1000, 400)
+            else:
+                log = otp_to_logs(db, result, "sms", True, datetime.now())
+                db.exec(
+                    "DELETE FROM sms_otp WHERE id = %s",
+                    (result.get("id"),),
+                )
+                db.commit()
+                return Success("OTP verified.", 200, {})
         else:
             db.exec(
                 "UPDATE sms_otp SET tries = %s WHERE id = %s",
