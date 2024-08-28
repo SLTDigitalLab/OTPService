@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 
+
 class RegisterUserModel(BaseModel):
     id: str | None = None
     first_name: str
@@ -53,6 +54,7 @@ class User(BaseModel):
     created_ts: datetime | None = None
     updated_ts: datetime | None = None
     last_login_ts: datetime | None = None
+
 
 class UserXp:
     id: str
@@ -178,5 +180,3 @@ class AuthSuccess:
             "msg": self.message,
             "result": self.result,
         }
-
-

@@ -2,7 +2,6 @@ from fastapi import Request, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, APIKeyHeader
 from auth.jwt_handler import JWTHandler
 from auth.api_key_handler import APIKeyManager
-from typing import Optional
 
 
 class JWTBearer(HTTPBearer):

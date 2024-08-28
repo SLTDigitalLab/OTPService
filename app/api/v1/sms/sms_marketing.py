@@ -4,6 +4,7 @@ from type_def.auth import User
 from type_def.tenent import Tenent
 from type_def.common import Success, Error
 from type_def.configs import SMPP
+import os
 
 
 def send_sms_marketing(
@@ -19,7 +20,7 @@ def send_sms_marketing(
     if not tenent.disabled and not tenent.verified:
         try:
             send_sms(
-                str("SLT"),
+                os.environ.get("SMPP_SOURCE_NAME"),
                 str(send_to),
                 msg,
                 smpp_config=SMPP(),

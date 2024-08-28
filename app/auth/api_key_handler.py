@@ -63,6 +63,7 @@ class APIKeyManager:
             return Error(str(e), 4000, 400)
 
     def get_my_token_list(self) -> Success | Error:
+        print(self.user)
         if self.user:
             self.db.exec(
                 "SELECT name, allowed_origins, scope, expire_ts, last_used, disabled, date_disabled, created_ts FROM api_keys WHERE user_id = %s",
@@ -72,7 +73,7 @@ class APIKeyManager:
             if result:
                 return Success("Token fetching success", 200, result)
             return Error("No API Keys found", 4001, 404)
-        return Error("User not found", 4002, 404)
+        return Error("User not found dsadskj", 4002, 404)
 
     def safe_get(
         self, api_key: str, scope: str | None = None, origin: str | None = None

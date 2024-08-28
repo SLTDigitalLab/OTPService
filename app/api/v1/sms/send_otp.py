@@ -9,6 +9,7 @@ from type_def.tenent import Tenent
 from type_def.common import Success, Error
 from type_def.configs import SMPP
 
+import os
 
 def send_sms_otp(
     user: User,
@@ -47,7 +48,7 @@ def send_sms_otp(
     db.commit()
     try:
         send_sms(
-            str("SLT"),
+            os.environ.get("SMPP_SOURCE_NAME"),
             str(send_to),
             tenent.sms_otp_template.format(
                 otp=otp, created_at=created_at, expired_at=expired_at

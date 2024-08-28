@@ -79,9 +79,9 @@ async def read_users_me(
     )
 
 
-@app.get("/auth/logout", tags=["auth"], dependencies=[Depends(JWTBearer())])
-async def logout(current_user: User = Depends(get_current_active_user)):
-    return {"msg": "Logout"}
+# @app.get("/auth/logout", tags=["auth"], dependencies=[Depends(JWTBearer())])
+# async def logout(current_user: User = Depends(get_current_active_user)):
+#     return {"msg": "Logout"}
 
 
 @app.put(
@@ -90,8 +90,8 @@ async def logout(current_user: User = Depends(get_current_active_user)):
     dependencies=[Depends(JWTBearer())],
 )
 async def change_password(
-    user_id: str,
     body: ChangePasswordModel,
+    user_id: str | None = None,
     current_user: User = Depends(get_current_active_user),
 ):
     return (
@@ -148,7 +148,9 @@ async def delete_api_token(api_key: str):
 async def list_api_token(
     response: Response, user: User = Depends(get_current_active_user)
 ):
-    return APIKeyManager(user).get_my_token_list().resp(response)
+    print("User")
+    print(user)
+    return APIKeyManager(current_user=user).get_my_token_list().resp(response)
 
 
 #########################

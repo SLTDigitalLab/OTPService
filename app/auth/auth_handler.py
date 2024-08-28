@@ -8,7 +8,7 @@ from type_def.auth import (
     RegisterUserModel,
     LoginUserModel,
     User,
-    UserXp
+    UserXp,
 )
 from typing import Optional, Union
 from fastapi import Depends
@@ -17,6 +17,7 @@ from auth.api_key_handler import APIKeyManager
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError, InvalidHash
 from type_def.keys import DecodedKey
+
 
 class AuthHandler:
     def __init__(self, user: User | None = None):
@@ -49,7 +50,10 @@ class AuthHandler:
             self.db.commit()
             result = self.db.fetchone()
             if result:
-                return AuthSuccess("User registered successfully", UserXp(**User(**result).__dict__).pub())
+                return AuthSuccess(
+                    "User registered successfully",
+                    UserXp(**User(**result).__dict__).pub(),
+                )
             return AuthError("User not created")
         except Exception as e:
             return AuthError(str(e))
@@ -206,5 +210,7 @@ def get_current_active_user_api_key(
     return None
 
 
-def decode_key(token: str = Depends(APIKeyHeader(name="X-Api-Key"))) -> DecodedKey | None:
+def decode_key(
+    token: str = Depends(APIKeyHeader(name="X-Api-Key")),
+) -> DecodedKey | None:
     return APIKeyManager().safe_get(token)
