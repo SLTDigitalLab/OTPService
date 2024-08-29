@@ -42,10 +42,20 @@ from api.v1.email.verify_otp import verify_email_otp
 from api.v1.email.email_marketing import send_email_marketing
 
 from api.v1.management.tenent import TenentAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI()
 
+origins = ['*']
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def root():
