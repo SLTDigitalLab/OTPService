@@ -27,7 +27,7 @@ class JWTBearer(HTTPBearer):
 
     def verify_jwt(self, jwtoken: str) -> bool:
         try:
-            jwt = JWTHandler("rae:web")
+            jwt = JWTHandler()
             payload = jwt.decode(jwtoken)
             return True if payload else False
         except Exception as e:

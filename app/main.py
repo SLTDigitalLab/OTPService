@@ -115,7 +115,7 @@ async def change_password(
 async def delete_user(
     response: Response,
     user_id: str,
-    current_user: User | None = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     return (
         Success("User deleted successfully", status.HTTP_200_OK, {}).resp(response)
