@@ -10,7 +10,7 @@ from type_def.auth import (
     User,
     UserXp,
 )
-from typing import Optional, Union
+from typing import Optional
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer, APIKeyHeader
 from auth.api_key_handler import APIKeyManager
@@ -160,13 +160,13 @@ class AuthHandler:
 async def get_current_user_jwt(
     token: str = Depends(OAuth2PasswordBearer(tokenUrl="token")),
 ) -> dict | None:
-    # try:
-    jwt_handler = JWTHandler(aud=f"otp:web")
-    user_dict = jwt_handler.decode(token)
-    print(user_dict)
-    return user_dict
-    # except Exception as e:
-    #     return raise_exception(e)
+    try:
+        jwt_handler = JWTHandler(aud=f"otp:web")
+        user_dict = jwt_handler.decode(token)
+        print(user_dict)
+        return user_dict
+    except Exception as e:
+        raise ValueError(e)
 
 
 def get_current_active_user_jwt(
