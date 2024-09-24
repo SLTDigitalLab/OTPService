@@ -34,10 +34,10 @@ class TenentRq(BaseModel):
     sms_otp_expired_in_s: int = 300
     sms_otp_max_tries: int = 3
     sms_otp_template: str = (
-        "Your OTP is {otp}. It's expired at {expired_at}. (Created: {created_at}))"
+        "Your OTP is {otp}. It's expired after {time_remaining} seconds. [generated time: {created_at} UTC, expiring: {expired_at} UTC]"
     )
     email_otp_template: str = (
-        "Your OTP is {otp}. It's expired at {expired_at}. (Created: {created_at}))"
+        "Your OTP is {otp}. It's expired after {time_remaining} seconds. [generated time: {created_at} UTC, expiring: {expired_at} UTC]"
     )
 
 

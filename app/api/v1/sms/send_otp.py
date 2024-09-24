@@ -51,7 +51,7 @@ def send_sms_otp(
             os.environ.get("SMPP_SOURCE_NAME"),
             str(send_to),
             tenent.sms_otp_template.format(
-                otp=otp, created_at=created_at, expired_at=expired_at
+                otp=otp, time_remaining=tenent.sms_otp_expired_in_s, created_at=created_at, expired_at=expired_at
             ),
             smpp_config=SMPP(),
         )
