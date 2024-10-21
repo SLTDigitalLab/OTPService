@@ -286,6 +286,18 @@ def rename_tenent(
 ):
     return TenentAPI(user).rename(id, body.name).resp(response)
 
+@app.delete(
+    "/api/v1/management/tenents/{id}",
+    tags=["tenents"],
+    dependencies=[Depends(JWTBearer)],
+)
+def delete_tenent(
+    response: Response,
+    id: str,
+    user: User = Depends(get_current_active_user),
+):
+    return TenentAPI(user).delete(id).resp(response)
+
 
 #########################
 #      HEALTH ROUTES   #
