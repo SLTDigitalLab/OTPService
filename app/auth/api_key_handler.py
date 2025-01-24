@@ -66,7 +66,7 @@ class APIKeyManager:
         print(self.user)
         if self.user:
             self.db.exec(
-                "SELECT name, allowed_origins, scope, expire_ts, last_used, disabled, date_disabled, created_ts FROM api_keys WHERE user_id = %s",
+                "SELECT name, allowed_origins, scope, tenent_id, expire_ts, last_used, disabled, date_disabled, created_ts FROM api_keys WHERE user_id = %s",
                 (self.user.id,),
             )
             result = self.db.fetchall()

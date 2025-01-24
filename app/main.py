@@ -212,7 +212,7 @@ def api_send_email_otp(
     decoded_key: DecodedKey = Depends(decode_key),
 ):
     return send_email_otp(
-        decoded_key.user, decoded_key.tenent, body.email, body.client_secret
+        decoded_key.user, decoded_key.tenent, body.email
     ).resp(response)
 
 
@@ -285,6 +285,18 @@ def rename_tenent(
     user: User = Depends(get_current_active_user),
 ):
     return TenentAPI(user).rename(id, body.name).resp(response)
+
+@app.delete(
+    "/api/v1/management/tenents/{id}",
+    tags=["tenents"],
+    dependencies=[Depends(JWTBearer)],
+)
+def delete_tenent(
+    response: Response,
+    id: str,
+    user: User = Depends(get_current_active_user),
+):
+    return TenentAPI(user).delete(id).resp(response)
 
 
 #########################

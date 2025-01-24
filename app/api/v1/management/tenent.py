@@ -25,16 +25,20 @@ class TenentAPI(Tenents):
         tenent_list: list[Tenent] | None = super().list()
         if tenent_list:
             return Success("Tenent found", 200, [_r.__dict__ for _r in tenent_list])
-        return Error("Tenent not found", 1000, 400)
+        return Success("No tenents. Please create.", 200, [])
 
     def update():
         pass
 
-    def delete():
-        pass
+    def delete(self, id: str):
+        if(super().delete(id)):
+             return Success("Tenent deleted", 200, None)
+        return Error("Tenent delete failed", 4000, 400)
 
     def rename(self, id: str, name: str):
-        super().rename(id, name)
+        if(super().rename(id, name)):
+             return Success("Tenent updated", 200, None)
+        return Error("Tenent update failed", 4000, 400)
         # self.db.exec("UPDATE tenents SET name = %s, verified = %s WHERE tenent_id = %s and user_id = %s", (name, False, id, self.user.id))
         # c = self.db.commit()
         # print(c)

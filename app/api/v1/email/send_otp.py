@@ -21,7 +21,7 @@ def send_email_otp(
     expired_at = datetime.now() + timedelta(seconds=tenent.email_otp_expired_in_s)
     secret = str(uuid4())
     db.exec(
-        "INSERT INTO email_otp (tenent_id, user_id, sent_to, otp, client_secret, created_at, expired_at, validated, validated_at, tries) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING (id, tenent, user_id, sent_to, created_at, expired_at)",
+        "INSERT INTO email_otp (tenent_id, user_id, sent_to, otp, client_secret, created_at, expired_at, validated, validated_at, tries) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING (id, tenent_id, user_id, sent_to, created_at, expired_at)",
         (
             tenent.id,
             user.id,
@@ -36,13 +36,13 @@ def send_email_otp(
         ),
     )
 
-    result = db.fetchone()
+    # result = db.fetchone()
     try:
         send_email(
             str(tenent.name),
             str(send_to),
-            tenent.sms_otp_template.format(
-                otp=otp, created_at=created_at, expired_at=expired_at
+            tenent.email_otp_template.format(
+                otp=otp, time_remaining=tenent.email_otp_expired_in_s, created_at=created_at, expired_at=expired_at
             ),
             smtp_config=SMTP()
         )

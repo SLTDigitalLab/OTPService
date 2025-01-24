@@ -44,6 +44,7 @@ class Tenents:
         return None
 
     def list(self) -> list[Tenent] | None:
+        print(self.user)
         self.db.exec("SELECT * FROM tenents WHERE user_id = %s", (self.user.id,))
         result = self.db.fetchall()
         if result:
@@ -53,26 +54,37 @@ class Tenents:
     def update():
         pass
 
-    def delete():
-        pass
+    def delete(self, id: str, ):
+        try:
+            self.db.exec(
+                "DELETE from tenents WHERE id = %s and user_id = %s",
+                (id, self.user.id),
+            )
+            self.db.commit()
+            return True
+        except Exception as e:
+            return False
 
-    def rename(self, id: str, name: str):
-        self.db.exec(
-            "UPDATE tenents SET name = %s, verified = %s WHERE tenent_id = %s and user_id = %s",
-            (name, False, id, self.user.id),
-        )
-        c = self.db.commit()
-        print(c)
+    def rename(self, id: str, name: str) -> bool:
+        try:
+            self.db.exec(
+                "UPDATE tenents SET name = %s, verified = %s WHERE id = %s and user_id = %s",
+                (name, False, id, self.user.id),
+            )
+            self.db.commit()
+            return True
+        except Exception as e:
+            return False
 
     def verify(self):
         self.db.exec(
-            "UPDATE tenents SET verified = %s WHERE user_id = %s", (True, self.user.id)
+            "UPDATE tenents SET verified = %s WHERE user_id = %s", (True, self.user.id, )
         )
         self.db.commit()
 
     def disable(self):
         self.db.exec(
-            "UPDATE tenents SET disabled = %s WHERE user_id = %s", (True, self.user.id)
+            "UPDATE tenents SET disabled = %s WHERE user_id = %s", (True, self.user.id, )
         )
         self.db.commit()
 
